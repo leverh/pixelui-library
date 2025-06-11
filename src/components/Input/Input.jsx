@@ -36,7 +36,7 @@ const Input = forwardRef(({
   const helperTextId = `${id}-helper`;
   const errorTextId = `${id}-error`;
   
-  // Determine if this is a controlled or uncontrolled component
+  // Controlled or uncontrolled component?
   const isControlled = value !== undefined;
   const currentValue = isControlled ? value : internalValue;
   
