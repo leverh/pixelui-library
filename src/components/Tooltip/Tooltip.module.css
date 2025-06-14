@@ -1,0 +1,334 @@
+.tooltipWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 1000;
+  max-width: 200px;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-neutral-900);
+  color: white;
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-normal);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  word-wrap: break-word;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.8);
+  transition: all 0.15s ease-in-out;
+  pointer-events: none;
+}
+
+.tooltip.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+}
+
+/* Arrow styles */
+.arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 5px solid transparent;
+}
+
+/* Position variants */
+.top {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) scale(0.8);
+  margin-bottom: 5px;
+}
+
+.top.visible {
+  transform: translateX(-50%) scale(1);
+}
+
+.top .arrow {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: var(--color-neutral-900);
+}
+
+.bottom {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) scale(0.8);
+  margin-top: 5px;
+}
+
+.bottom.visible {
+  transform: translateX(-50%) scale(1);
+}
+
+.bottom .arrow {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: var(--color-neutral-900);
+}
+
+.left {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%) scale(0.8);
+  margin-right: 5px;
+}
+
+.left.visible {
+  transform: translateY(-50%) scale(1);
+}
+
+.left .arrow {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left-color: var(--color-neutral-900);
+}
+
+.right {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%) scale(0.8);
+  margin-left: 5px;
+}
+
+.right.visible {
+  transform: translateY(-50%) scale(1);
+}
+
+.right .arrow {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right-color: var(--color-neutral-900);
+}
+
+/* Color variants */
+.primary {
+  background-color: var(--color-primary-600);
+}
+
+.primary .arrow.top {
+  border-top-color: var(--color-primary-600);
+}
+
+.primary .arrow.bottom {
+  border-bottom-color: var(--color-primary-600);
+}
+
+.primary .arrow.left {
+  border-left-color: var(--color-primary-600);
+}
+
+.primary .arrow.right {
+  border-right-color: var(--color-primary-600);
+}
+
+.success {
+  background-color: var(--color-success);
+}
+
+.success .arrow.top {
+  border-top-color: var(--color-success);
+}
+
+.success .arrow.bottom {
+  border-bottom-color: var(--color-success);
+}
+
+.success .arrow.left {
+  border-left-color: var(--color-success);
+}
+
+.success .arrow.right {
+  border-right-color: var(--color-success);
+}
+
+.warning {
+  background-color: var(--color-warning);
+}
+
+.warning .arrow.top {
+  border-top-color: var(--color-warning);
+}
+
+.warning .arrow.bottom {
+  border-bottom-color: var(--color-warning);
+}
+
+.warning .arrow.left {
+  border-left-color: var(--color-warning);
+}
+
+.warning .arrow.right {
+  border-right-color: var(--color-warning);
+}
+
+.error {
+  background-color: var(--color-error);
+}
+
+.error .arrow.top {
+  border-top-color: var(--color-error);
+}
+
+.error .arrow.bottom {
+  border-bottom-color: var(--color-error);
+}
+
+.error .arrow.left {
+  border-left-color: var(--color-error);
+}
+
+.error .arrow.right {
+  border-right-color: var(--color-error);
+}
+
+.light {
+  background-color: white;
+  color: var(--color-neutral-900);
+  border: 1px solid var(--color-neutral-200);
+}
+
+.light .arrow.top {
+  border-top-color: white;
+}
+
+.light .arrow.bottom {
+  border-bottom-color: white;
+}
+
+.light .arrow.left {
+  border-left-color: white;
+}
+
+.light .arrow.right {
+  border-right-color: white;
+}
+
+/* Size variants */
+.small {
+  max-width: 150px;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.medium {
+  max-width: 200px;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.large {
+  max-width: 300px;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-base);
+}
+
+/* Auto positioning adjustments */
+.autoPosition {
+  /* This class is used for dynamic positioning */
+}
+
+/* Delay variants */
+.delayNone {
+  transition-delay: 0ms;
+}
+
+.delayShort {
+  transition-delay: 100ms;
+}
+
+.delayMedium {
+  transition-delay: 300ms;
+}
+
+.delayLong {
+  transition-delay: 500ms;
+}
+
+/* Interactive tooltip */
+.interactive {
+  pointer-events: auto;
+  cursor: default;
+}
+
+/* Multi-line content */
+.multiline {
+  white-space: normal;
+  text-align: left;
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .tooltip {
+  background-color: var(--color-neutral-800);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .light {
+  background-color: var(--color-neutral-900);
+  color: var(--color-neutral-100);
+  border-color: var(--color-neutral-700);
+}
+
+[data-theme="dark"] .light .arrow.top {
+  border-top-color: var(--color-neutral-900);
+}
+
+[data-theme="dark"] .light .arrow.bottom {
+  border-bottom-color: var(--color-neutral-900);
+}
+
+[data-theme="dark"] .light .arrow.left {
+  border-left-color: var(--color-neutral-900);
+}
+
+[data-theme="dark"] .light .arrow.right {
+  border-right-color: var(--color-neutral-900);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tooltip {
+    max-width: 250px;
+    font-size: var(--text-xs);
+  }
+  
+  .large {
+    max-width: 280px;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+  }
+}
+
+/* Animation variants */
+.slideIn {
+  transition: all 0.2s ease-out;
+}
+
+.fadeIn {
+  transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
+  transform: none;
+}
+
+.fadeIn.visible {
+  transform: none;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .tooltip {
+    transition: none;
+  }
+  
+  .tooltip.visible {
+    transform: none;
+  }
+}
