@@ -6,23 +6,26 @@ export default {
   parameters: {
     docs: {
       description: {
-        component: 'A flexible accordion component with multiple variants, sizes, and customization options. Perfect for organizing content in collapsible sections.'
+        component: 'A modern accordion component with smooth animations, multiple variants, and beautiful design. Perfect for organizing content in collapsible sections with wow factor.'
       }
     }
   },
   argTypes: {
     variant: {
       control: 'select',
-      options: ['default', 'bordered', 'shadow', 'split', 'minimal', 'card']
+      options: ['default', 'bordered', 'floating', 'glass', 'minimal', 'card']
     },
     size: {
       control: 'select',
-      options: ['small', 'medium', 'large']
+      options: ['sm', 'md', 'lg']
     },
     allowMultiple: {
       control: 'boolean'
     },
     collapsible: {
+      control: 'boolean'
+    },
+    animated: {
       control: 'boolean'
     }
   }
@@ -40,48 +43,151 @@ It includes line breaks and formatting to demonstrate how the accordion handles 
 • Multiple sections
 • Rich formatting options
 
-The accordion smoothly animates between open and closed states, providing a pleasant user experience.`
+The accordion smoothly animates between open and closed states, providing a premium user experience.`
 };
 
-// Default story
-export const Default = {
+// Playground - Interactive story for testing all props
+export const Playground = {
   args: {
     variant: 'default',
-    size: 'medium',
+    size: 'md',
     allowMultiple: false,
     collapsible: true,
+    animated: true,
     defaultOpenItems: [0]
   },
   render: (args) => (
-    <Accordion {...args}>
-      <Accordion.Item id={0} title="Getting Started">
+    <Accordion {...args} onChange={(openItems) => console.log('Open items:', openItems)}>
+      <Accordion.Item 
+        id={0} 
+        title="Getting Started"
+        subtitle="Learn the basics"
+        icon="🚀"
+        badge="New"
+      >
         {sampleContent.medium}
       </Accordion.Item>
-      <Accordion.Item id={1} title="Advanced Features">
+      <Accordion.Item 
+        id={1} 
+        title="Advanced Features"
+        subtitle="Explore powerful capabilities"
+        icon="⚡"
+        badge="5"
+      >
         {sampleContent.long}
       </Accordion.Item>
-      <Accordion.Item id={2} title="FAQ">
+      <Accordion.Item 
+        id={2} 
+        title="FAQ"
+        icon="❓"
+      >
         {sampleContent.short}
       </Accordion.Item>
     </Accordion>
   )
 };
 
-// Basic accordion with subtitles
-export const WithSubtitles = () => (
-  <Accordion variant="default" size="medium">
+// Default story
+export const Default = {
+  args: {
+    variant: 'default',
+    size: 'md',
+    allowMultiple: false,
+    collapsible: true,
+    defaultOpenItems: [0]
+  },
+  render: (args) => (
+    <Accordion {...args}>
+      <Accordion.Item id={0} title="Getting Started" icon="📚">
+        {sampleContent.medium}
+      </Accordion.Item>
+      <Accordion.Item id={1} title="Advanced Features" icon="⚙️">
+        {sampleContent.long}
+      </Accordion.Item>
+      <Accordion.Item id={2} title="FAQ" icon="❓">
+        {sampleContent.short}
+      </Accordion.Item>
+    </Accordion>
+  )
+};
+
+// Modern Variants Showcase
+export const ModernVariants = () => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+    <div>
+      <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '600' }}>Floating</h3>
+      <Accordion variant="floating" size="md">
+        <Accordion.Item id="floating-1" title="Elevated Design" icon="✨" badge="Pro">
+          Floating cards with subtle shadows and smooth hover effects.
+        </Accordion.Item>
+        <Accordion.Item id="floating-2" title="Modern Aesthetic" icon="🎨">
+          Interfaces and modern applications.
+        </Accordion.Item>
+      </Accordion>
+    </div>
+
+    <div>
+      <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '600' }}>Glass</h3>
+      <div style={{ 
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+        padding: '2rem', 
+        borderRadius: '1rem',
+        marginBottom: '1rem'
+      }}>
+        <Accordion variant="glass" size="md">
+          <Accordion.Item id="glass-1" title="Glassmorphism Effect" icon="💎" badge="New">
+            Backdrop blur effect with translucent backgrounds.
+          </Accordion.Item>
+          <Accordion.Item id="glass-2" title="Premium Feel" icon="⭐">
+            Creates a layered interface with depth.
+          </Accordion.Item>
+        </Accordion>
+      </div>
+    </div>
+  </div>
+);
+
+// With Subtitles and Badges
+export const WithSubtitlesAndBadges = () => (
+  <Accordion variant="bordered" size="md">
     <Accordion.Item 
       id="account" 
       title="Account Settings"
       subtitle="Manage your profile and account preferences"
+      icon="👤"
+      badge="3"
     >
       <div>
         <p>Update your personal information, change your password, and manage your account settings.</p>
-        <ul>
-          <li>Profile information</li>
-          <li>Security settings</li>
-          <li>Privacy preferences</li>
-        </ul>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '1rem', 
+          marginTop: '1rem' 
+        }}>
+          <div style={{ 
+            padding: '1rem', 
+            background: '#f0f9ff', 
+            borderRadius: '0.5rem',
+            border: '1px solid #bae6fd'
+          }}>
+            <strong>Profile</strong>
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.875rem', color: '#0c4a6e' }}>
+              Update your personal information
+            </p>
+          </div>
+          <div style={{ 
+            padding: '1rem', 
+            background: '#f0fdf4', 
+            borderRadius: '0.5rem',
+            border: '1px solid #bbf7d0'
+          }}>
+            <strong>Security</strong>
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.875rem', color: '#14532d' }}>
+              Manage passwords and 2FA
+            </p>
+          </div>
+        </div>
       </div>
     </Accordion.Item>
     
@@ -89,12 +195,35 @@ export const WithSubtitles = () => (
       id="billing" 
       title="Billing & Payments"
       subtitle="View invoices and manage payment methods"
+      icon="💳"
+      badge="New"
     >
       <div>
         <p>Access your billing history and manage your payment methods.</p>
-        <button style={{ padding: '0.5rem 1rem', marginTop: '0.5rem', borderRadius: '0.25rem', border: '1px solid #ccc' }}>
-          View Billing History
-        </button>
+        <div style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button style={{ 
+            padding: '0.5rem 1rem', 
+            background: '#3b82f6', 
+            color: 'white', 
+            border: 'none',
+            borderRadius: '0.5rem',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s'
+          }}>
+            View Billing History
+          </button>
+          <button style={{ 
+            padding: '0.5rem 1rem', 
+            background: 'transparent', 
+            color: '#3b82f6',
+            border: '1px solid #3b82f6',
+            borderRadius: '0.5rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}>
+            Add Payment Method
+          </button>
+        </div>
       </div>
     </Accordion.Item>
     
@@ -102,17 +231,41 @@ export const WithSubtitles = () => (
       id="notifications" 
       title="Notifications"
       subtitle="Control how and when you receive notifications"
+      icon="🔔"
+      badge="12"
     >
       <div>
         <p>Configure your notification preferences for email, push notifications, and in-app alerts.</p>
-        <div style={{ marginTop: '1rem' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <label style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.75rem',
+            padding: '0.75rem',
+            background: '#f9fafb',
+            borderRadius: '0.5rem',
+            cursor: 'pointer'
+          }}>
             <input type="checkbox" defaultChecked />
-            Email notifications
+            <div>
+              <div style={{ fontWeight: '500' }}>Email notifications</div>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Receive updates via email</div>
+            </div>
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <label style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.75rem',
+            padding: '0.75rem',
+            background: '#f9fafb',
+            borderRadius: '0.5rem',
+            cursor: 'pointer'
+          }}>
             <input type="checkbox" />
-            Push notifications
+            <div>
+              <div style={{ fontWeight: '500' }}>Push notifications</div>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Get notified on your device</div>
+            </div>
           </label>
         </div>
       </div>
@@ -120,52 +273,117 @@ export const WithSubtitles = () => (
   </Accordion>
 );
 
-// Multiple selection accordion
+// Multiple Selection
 export const MultipleSelection = () => (
-  <Accordion variant="bordered" allowMultiple={true} defaultOpenItems={[0, 2]}>
-    <Accordion.Item id={0} title="Personal Information">
+  <Accordion variant="card" allowMultiple={true} defaultOpenItems={[0, 2]} size="md">
+    <Accordion.Item id={0} title="Personal Information" icon="👤">
       <div>
         <p>Your basic profile information and contact details.</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginTop: '1rem' }}>
           <div>
-            <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: '500' }}>First Name</label>
-            <input type="text" placeholder="John" style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem' }} />
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>First Name</label>
+            <input 
+              type="text" 
+              placeholder="John" 
+              style={{ 
+                width: '100%', 
+                padding: '0.75rem', 
+                border: '1px solid #d1d5db', 
+                borderRadius: '0.5rem',
+                fontSize: '0.875rem'
+              }} 
+            />
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: '500' }}>Last Name</label>
-            <input type="text" placeholder="Doe" style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem' }} />
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Last Name</label>
+            <input 
+              type="text" 
+              placeholder="Doe" 
+              style={{ 
+                width: '100%', 
+                padding: '0.75rem', 
+                border: '1px solid #d1d5db', 
+                borderRadius: '0.5rem',
+                fontSize: '0.875rem'
+              }} 
+            />
           </div>
         </div>
       </div>
     </Accordion.Item>
     
-    <Accordion.Item id={1} title="Contact Information">
+    <Accordion.Item id={1} title="Contact Information" icon="📧">
       <div>
         <p>How we can reach you.</p>
         <div style={{ marginTop: '1rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: '500' }}>Email</label>
-          <input type="email" placeholder="john@example.com" style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem', marginBottom: '1rem' }} />
-          <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: '500' }}>Phone</label>
-          <input type="tel" placeholder="+1 (555) 123-4567" style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem' }} />
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Email</label>
+          <input 
+            type="email" 
+            placeholder="john@example.com" 
+            style={{ 
+              width: '100%', 
+              padding: '0.75rem', 
+              border: '1px solid #d1d5db', 
+              borderRadius: '0.5rem', 
+              marginBottom: '1rem',
+              fontSize: '0.875rem'
+            }} 
+          />
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Phone</label>
+          <input 
+            type="tel" 
+            placeholder="+1 (555) 123-4567" 
+            style={{ 
+              width: '100%', 
+              padding: '0.75rem', 
+              border: '1px solid #d1d5db', 
+              borderRadius: '0.5rem',
+              fontSize: '0.875rem'
+            }} 
+          />
         </div>
       </div>
     </Accordion.Item>
     
-    <Accordion.Item id={2} title="Preferences">
+    <Accordion.Item id={2} title="Preferences" icon="⚙️" badge="3">
       <div>
         <p>Customize your experience.</p>
-        <div style={{ marginTop: '1rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-            <input type="checkbox" style={{ marginRight: '0.5rem' }} />
-            Dark mode
+        <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <label style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.75rem',
+            padding: '0.75rem',
+            background: '#f9fafb',
+            borderRadius: '0.5rem',
+            cursor: 'pointer'
+          }}>
+            <input type="checkbox" />
+            <span>Dark mode</span>
           </label>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-            <input type="checkbox" defaultChecked style={{ marginRight: '0.5rem' }} />
-            Email notifications
+          <label style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.75rem',
+            padding: '0.75rem',
+            background: '#f9fafb',
+            borderRadius: '0.5rem',
+            cursor: 'pointer'
+          }}>
+            <input type="checkbox" defaultChecked />
+            <span>Email notifications</span>
           </label>
-          <label style={{ display: 'block' }}>
-            <input type="checkbox" style={{ marginRight: '0.5rem' }} />
-            Marketing emails
+          <label style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.75rem',
+            padding: '0.75rem',
+            background: '#f9fafb',
+            borderRadius: '0.5rem',
+            cursor: 'pointer'
+          }}>
+            <input type="checkbox" />
+            <span>Marketing emails</span>
           </label>
         </div>
       </div>
@@ -173,211 +391,82 @@ export const MultipleSelection = () => (
   </Accordion>
 );
 
-// Accordion with custom toggles and icons
-export const CustomToggles = () => (
-  <Accordion variant="shadow" size="large">
-    <Accordion.Item 
-      id="dashboard" 
-      title="Dashboard"
-      icon="📊"
-      customToggle={<span style={{ fontSize: '1.5rem' }}>⊞</span>}
-    >
-      <div>
-        <p>Your main dashboard with key metrics and recent activity.</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginTop: '1rem' }}>
-          <div style={{ padding: '1rem', background: '#f0f9ff', borderRadius: '0.5rem', textAlign: 'center' }}>
-            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#0369a1' }}>1,234</div>
-            <div style={{ fontSize: '0.875rem', color: '#075985' }}>Total Users</div>
-          </div>
-          <div style={{ padding: '1rem', background: '#f0fdf4', borderRadius: '0.5rem', textAlign: 'center' }}>
-            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#15803d' }}>$12,345</div>
-            <div style={{ fontSize: '0.875rem', color: '#166534' }}>Revenue</div>
-          </div>
-          <div style={{ padding: '1rem', background: '#fef3c7', borderRadius: '0.5rem', textAlign: 'center' }}>
-            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#d97706' }}>98.5%</div>
-            <div style={{ fontSize: '0.875rem', color: '#92400e' }}>Uptime</div>
-          </div>
-        </div>
-      </div>
-    </Accordion.Item>
-    
-    <Accordion.Item 
-      id="analytics" 
-      title="Analytics"
-      icon="📈"
-      customToggle={<span style={{ fontSize: '1.5rem' }}>⊞</span>}
-    >
-      <div>
-        <p>Detailed analytics and reporting for your application.</p>
-        <div style={{ marginTop: '1rem' }}>
-          <h4 style={{ margin: '0 0 0.5rem 0' }}>Quick Actions</h4>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <button style={{ padding: '0.5rem 1rem', border: '1px solid #3b82f6', color: '#3b82f6', background: 'white', borderRadius: '0.25rem' }}>
-              Export Data
-            </button>
-            <button style={{ padding: '0.5rem 1rem', border: '1px solid #10b981', color: '#10b981', background: 'white', borderRadius: '0.25rem' }}>
-              Generate Report
-            </button>
-            <button style={{ padding: '0.5rem 1rem', border: '1px solid #f59e0b', color: '#f59e0b', background: 'white', borderRadius: '0.25rem' }}>
-              Schedule Report
-            </button>
-          </div>
-        </div>
-      </div>
-    </Accordion.Item>
-    
-    <Accordion.Item 
-      id="settings" 
-      title="Settings"
-      icon="⚙️"
-      customToggle={<span style={{ fontSize: '1.5rem' }}>⊞</span>}
-    >
-      <div>
-        <p>System configuration and preferences.</p>
-        <div style={{ marginTop: '1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <span>Auto-save</span>
-            <label style={{ position: 'relative', display: 'inline-block', width: '3rem', height: '1.5rem' }}>
-              <input type="checkbox" style={{ opacity: 0, width: 0, height: 0 }} />
-              <span style={{ 
-                position: 'absolute', 
-                cursor: 'pointer', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                bottom: 0, 
-                backgroundColor: '#ccc', 
-                borderRadius: '1.5rem',
-                transition: '0.4s'
-              }}></span>
-            </label>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>Theme</span>
-            <select style={{ padding: '0.25rem 0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem' }}>
-              <option>Light</option>
-              <option>Dark</option>
-              <option>Auto</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </Accordion.Item>
-  </Accordion>
-);
-
-// Variant showcase
-export const VariantShowcase = () => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-    <div>
-      <h3 style={{ marginBottom: '1rem' }}>Default</h3>
-      <Accordion variant="default">
-        <Accordion.Item id="default-1" title="Default Style">
-          Clean and simple accordion with subtle borders.
-        </Accordion.Item>
-        <Accordion.Item id="default-2" title="Another Section">
-          Works great for most use cases.
-        </Accordion.Item>
-      </Accordion>
-    </div>
-
-    <div>
-      <h3 style={{ marginBottom: '1rem' }}>Bordered</h3>
-      <Accordion variant="bordered">
-        <Accordion.Item id="bordered-1" title="Bordered Style">
-          Each item has its own border and spacing.
-        </Accordion.Item>
-        <Accordion.Item id="bordered-2" title="Separated Items">
-          Perfect for distinct sections that need clear separation.
-        </Accordion.Item>
-      </Accordion>
-    </div>
-
-    <div>
-      <h3 style={{ marginBottom: '1rem' }}>Shadow</h3>
-      <Accordion variant="shadow">
-        <Accordion.Item id="shadow-1" title="Shadow Style">
-          Elevated appearance with subtle shadows.
-        </Accordion.Item>
-        <Accordion.Item id="shadow-2" title="Modern Look">
-          Great for modern interfaces and cards.
-        </Accordion.Item>
-      </Accordion>
-    </div>
-
-    <div>
-      <h3 style={{ marginBottom: '1rem' }}>Split</h3>
-      <Accordion variant="split">
-        <Accordion.Item id="split-1" title="Split Style">
-          Headers have different background from content.
-        </Accordion.Item>
-        <Accordion.Item id="split-2" title="Clear Distinction">
-          Makes it easy to distinguish headers from content.
-        </Accordion.Item>
-      </Accordion>
-    </div>
-
-    <div>
-      <h3 style={{ marginBottom: '1rem' }}>Minimal</h3>
-      <Accordion variant="minimal">
-        <Accordion.Item id="minimal-1" title="Minimal Style">
-          Clean and understated design.
-        </Accordion.Item>
-        <Accordion.Item id="minimal-2" title="Less Is More">
-          Perfect for content-focused applications.
-        </Accordion.Item>
-      </Accordion>
-    </div>
-
-    <div>
-      <h3 style={{ marginBottom: '1rem' }}>Card</h3>
-      <Accordion variant="card">
-        <Accordion.Item id="card-1" title="Card Style">
-          Nested card appearance with rounded corners.
-        </Accordion.Item>
-        <Accordion.Item id="card-2" title="Layered Design">
-          Great for dashboard interfaces.
-        </Accordion.Item>
-      </Accordion>
-    </div>
-  </div>
-);
-
-// Size variants
+// Size Variants
 export const SizeVariants = () => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
     <div>
-      <h3 style={{ marginBottom: '1rem' }}>Small</h3>
-      <Accordion variant="bordered" size="small">
-        <Accordion.Item id="small-1" title="Small Accordion" subtitle="Compact size for tight spaces">
-          Perfect for sidebars or mobile interfaces where space is limited.
+      <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '600' }}>Small</h3>
+      <Accordion variant="bordered" size="sm">
+        <Accordion.Item id="small-1" title="Small Accordion" subtitle="Compact size" icon="📱">
+          For sidebars or mobile interfaces where space is limited.
         </Accordion.Item>
-        <Accordion.Item id="small-2" title="Another Small Item">
+        <Accordion.Item id="small-2" title="Another Small Item" icon="🔧">
           Still readable but takes up less space.
         </Accordion.Item>
       </Accordion>
     </div>
 
     <div>
-      <h3 style={{ marginBottom: '1rem' }}>Medium (Default)</h3>
-      <Accordion variant="bordered" size="medium">
-        <Accordion.Item id="medium-1" title="Medium Accordion" subtitle="Standard size for most use cases">
+      <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '600' }}>Medium (Default)</h3>
+      <Accordion variant="bordered" size="md">
+        <Accordion.Item id="medium-1" title="Medium Accordion" subtitle="Standard size" icon="💻">
           The default size that works well for most applications and provides good readability.
         </Accordion.Item>
-        <Accordion.Item id="medium-2" title="Balanced Design">
+        <Accordion.Item id="medium-2" title="Balanced Design" icon="⚖️">
           Good balance between content density and readability.
         </Accordion.Item>
       </Accordion>
     </div>
 
     <div>
-      <h3 style={{ marginBottom: '1rem' }}>Large</h3>
-      <Accordion variant="bordered" size="large">
-        <Accordion.Item id="large-1" title="Large Accordion" subtitle="Generous spacing for important content">
-          Larger size with more padding, perfect for main content areas or when you want to emphasize the accordion.
+      <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '600' }}>Large</h3>
+      <Accordion variant="bordered" size="lg">
+        <Accordion.Item id="large-1" title="Large Accordion" subtitle="Generous spacing" icon="🖥️">
+          Larger size with more padding - for main content areas or when you want to emphasize the accordion.
         </Accordion.Item>
-        <Accordion.Item id="large-2" title="Prominent Display">
-          Great for hero sections or primary navigation.
+        <Accordion.Item id="large-2" title="Prominent Display" icon="⭐">
+          For hero sections or primary navigation.
+        </Accordion.Item>
+      </Accordion>
+    </div>
+  </div>
+);
+
+// All Variants Showcase
+export const AllVariants = () => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+    <div>
+      <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '600' }}>Default</h3>
+      <Accordion variant="default">
+        <Accordion.Item id="default-1" title="Default Style" icon="📋">
+          Clean and simple accordion with subtle borders.
+        </Accordion.Item>
+        <Accordion.Item id="default-2" title="Another Section" icon="📝">
+          Works for most use cases.
+        </Accordion.Item>
+      </Accordion>
+    </div>
+
+    <div>
+      <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '600' }}>Bordered</h3>
+      <Accordion variant="bordered">
+        <Accordion.Item id="bordered-1" title="Bordered Style" icon="🎯">
+          Each item has its own border and spacing.
+        </Accordion.Item>
+        <Accordion.Item id="bordered-2" title="Separated Items" icon="📦">
+          For distinct sections that need clear separation.
+        </Accordion.Item>
+      </Accordion>
+    </div>
+
+    <div>
+      <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '600' }}>Minimal</h3>
+      <Accordion variant="minimal">
+        <Accordion.Item id="minimal-1" title="Minimal Style" icon="✨">
+          Clean and understated design.
+        </Accordion.Item>
+        <Accordion.Item id="minimal-2" title="Less Is More" icon="🎨">
+          For content-focused applications.
         </Accordion.Item>
       </Accordion>
     </div>
@@ -386,23 +475,32 @@ export const SizeVariants = () => (
 
 // FAQ Example
 export const FAQExample = () => (
-  <Accordion variant="default" size="medium">
+  <Accordion variant="default" size="md">
     <Accordion.Item 
       id="faq-1" 
       title="How do I get started?"
       subtitle="New to our platform? Here's how to begin"
+      icon="🚀"
     >
       <div>
         <p>Getting started is easy! Follow these simple steps:</p>
-        <ol style={{ marginTop: '1rem', paddingLeft: '1.5rem' }}>
+        <ol style={{ marginTop: '1rem', paddingLeft: '1.5rem', lineHeight: '1.6' }}>
           <li>Create your account by clicking the "Sign Up" button</li>
           <li>Verify your email address</li>
           <li>Complete your profile setup</li>
           <li>Start exploring our features with the guided tour</li>
         </ol>
-        <p style={{ marginTop: '1rem' }}>
-          <strong>Need help?</strong> Our support team is available 24/7 to assist you.
-        </p>
+        <div style={{ 
+          marginTop: '1.5rem', 
+          padding: '1rem', 
+          background: '#f0f9ff', 
+          borderRadius: '0.75rem',
+          border: '1px solid #bae6fd'
+        }}>
+          <p style={{ margin: 0, fontSize: '0.875rem', color: '#0c4a6e' }}>
+            <strong>💡 Need help?</strong> Our support team is available 24/7 to assist you.
+          </p>
+        </div>
       </div>
     </Accordion.Item>
     
@@ -410,18 +508,53 @@ export const FAQExample = () => (
       id="faq-2" 
       title="What payment methods do you accept?"
       subtitle="Billing and payment information"
+      icon="💳"
     >
       <div>
         <p>We accept all major payment methods:</p>
-        <ul style={{ marginTop: '1rem', paddingLeft: '1.5rem' }}>
-          <li>Credit Cards (Visa, MasterCard, American Express)</li>
-          <li>PayPal</li>
-          <li>Bank transfers (for enterprise customers)</li>
-          <li>Cryptocurrency (Bitcoin, Ethereum)</li>
-        </ul>
-        <p style={{ marginTop: '1rem' }}>
-          All payments are processed securely and encrypted. We don't store your payment information on our servers.
-        </p>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '1rem', 
+          marginTop: '1rem' 
+        }}>
+          <div style={{ 
+            padding: '1rem', 
+            background: '#f9fafb', 
+            borderRadius: '0.5rem',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>💳</div>
+            <strong>Credit Cards</strong>
+            <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: '#6b7280' }}>
+              Visa, MasterCard, Amex
+            </p>
+          </div>
+          <div style={{ 
+            padding: '1rem', 
+            background: '#f9fafb', 
+            borderRadius: '0.5rem',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🅿️</div>
+            <strong>PayPal</strong>
+            <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: '#6b7280' }}>
+              Secure online payments
+            </p>
+          </div>
+          <div style={{ 
+            padding: '1rem', 
+            background: '#f9fafb', 
+            borderRadius: '0.5rem',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🏦</div>
+            <strong>Bank Transfer</strong>
+            <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: '#6b7280' }}>
+              For enterprise customers
+            </p>
+          </div>
+        </div>
       </div>
     </Accordion.Item>
     
@@ -429,114 +562,53 @@ export const FAQExample = () => (
       id="faq-3" 
       title="Can I cancel my subscription anytime?"
       subtitle="Subscription management"
+      icon="🔄"
     >
       <div>
         <p>Yes! You can cancel your subscription at any time with no cancellation fees.</p>
-        <div style={{ marginTop: '1rem', padding: '1rem', background: '#f0f9ff', borderRadius: '0.5rem', border: '1px solid #bae6fd' }}>
-          <p style={{ margin: 0, fontSize: '0.875rem', color: '#0c4a6e' }}>
-            <strong>💡 Pro tip:</strong> When you cancel, you'll still have access to all features until the end of your current billing period.
+        <div style={{ 
+          marginTop: '1rem', 
+          padding: '1rem', 
+          background: '#f0fdf4', 
+          borderRadius: '0.75rem',
+          border: '1px solid #bbf7d0'
+        }}>
+          <p style={{ margin: 0, fontSize: '0.875rem', color: '#14532d' }}>
+            <strong>💡 Tip:</strong> When you cancel, you'll still have access to all features until the end of your current billing period.
           </p>
         </div>
         <p style={{ marginTop: '1rem' }}>
-          To cancel, go to Account Settings → Billing → Cancel Subscription.
+          To cancel, go to <strong>Account Settings → Billing → Cancel Subscription</strong>.
         </p>
-      </div>
-    </Accordion.Item>
-    
-    <Accordion.Item 
-      id="faq-4" 
-      title="Is my data secure?"
-      subtitle="Privacy and security information"
-    >
-      <div>
-        <p>Absolutely! We take data security very seriously and implement industry-standard security measures:</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
-          <div style={{ padding: '1rem', background: '#f0fdf4', borderRadius: '0.5rem', border: '1px solid #bbf7d0' }}>
-            <h4 style={{ margin: '0 0 0.5rem 0', color: '#15803d' }}>🔒 Encryption</h4>
-            <p style={{ margin: 0, fontSize: '0.875rem' }}>End-to-end encryption for all data</p>
-          </div>
-          <div style={{ padding: '1rem', background: '#fef3c7', borderRadius: '0.5rem', border: '1px solid #fde68a' }}>
-            <h4 style={{ margin: '0 0 0.5rem 0', color: '#d97706' }}>🛡️ Compliance</h4>
-            <p style={{ margin: 0, fontSize: '0.875rem' }}>GDPR, CCPA, and SOC 2 compliant</p>
-          </div>
-        </div>
       </div>
     </Accordion.Item>
   </Accordion>
 );
 
-// Disabled items example
+// Disabled Items
 export const DisabledItems = () => (
   <Accordion variant="bordered">
-    <Accordion.Item id="enabled-1" title="Available Feature">
+    <Accordion.Item id="enabled-1" title="Available Feature" icon="✅">
       This feature is fully available and working.
     </Accordion.Item>
     
-    <Accordion.Item id="disabled-1" title="Coming Soon Feature" disabled={true}>
+    <Accordion.Item id="disabled-1" title="Coming Soon Feature" icon="🚧" disabled={true}>
       This feature is currently in development.
     </Accordion.Item>
     
-    <Accordion.Item id="enabled-2" title="Another Available Feature">
+    <Accordion.Item id="enabled-2" title="Another Available Feature" icon="⚡">
       This one works too!
     </Accordion.Item>
     
-    <Accordion.Item id="disabled-2" title="Premium Feature" subtitle="Upgrade required" disabled={true}>
+    <Accordion.Item 
+      id="disabled-2" 
+      title="Premium Feature" 
+      subtitle="Upgrade required" 
+      icon="💎" 
+      badge="Pro"
+      disabled={true}
+    >
       This feature requires a premium subscription.
     </Accordion.Item>
   </Accordion>
 );
-
-// Interactive Playground
-export const Playground = {
-  args: {
-    variant: 'default',
-    size: 'medium',
-    allowMultiple: false,
-    collapsible: true,
-    defaultOpenItems: []
-  },
-  render: (args) => (
-    <Accordion {...args} onChange={(openItems) => console.log('Open items:', openItems)}>
-      <Accordion.Item 
-        id="playground-1" 
-        title="First Section"
-        subtitle="This is a subtitle"
-        icon="📝"
-      >
-        <div>
-          <p>This is the content of the first accordion item.</p>
-          <p>You can customize the variant, size, and behavior using the controls.</p>
-        </div>
-      </Accordion.Item>
-      
-      <Accordion.Item 
-        id="playground-2" 
-        title="Second Section"
-        subtitle="Another subtitle here"
-        icon="🎨"
-      >
-        <div>
-          <p>This is the second accordion item with different content.</p>
-          <ul>
-            <li>Try different variants</li>
-            <li>Change the size</li>
-            <li>Toggle multiple selection</li>
-          </ul>
-        </div>
-      </Accordion.Item>
-      
-      <Accordion.Item 
-        id="playground-3" 
-        title="Third Section"
-        icon="🚀"
-      >
-        <div>
-          <p>The third item shows how the accordion handles various content types.</p>
-          <div style={{ marginTop: '1rem', padding: '1rem', background: '#f3f4f6', borderRadius: '0.5rem' }}>
-            <code>console.log('Accordion is awesome!');</code>
-          </div>
-        </div>
-      </Accordion.Item>
-    </Accordion>
-  )
-};

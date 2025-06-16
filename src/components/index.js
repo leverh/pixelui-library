@@ -8,3 +8,4 @@ export { default as Tooltip } from './Tooltip';
 export { default as DataTable } from './DataTable';
 export { default as Accordion } from './Accordion';
 export { default as Grid } from './Grid';
+export { default as Header } from './Header';
