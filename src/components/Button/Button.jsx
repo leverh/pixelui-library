@@ -1,11 +1,10 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import { forwardRef } from 'react';
 import styles from './Button.module.css';
 
-const Button = React.forwardRef(({
+const Button = forwardRef(({
   children,
   variant = 'primary',
-  size = 'medium',
+  size = 'md',
   loading = false,
   disabled = false,
   fullWidth = false,
@@ -14,17 +13,10 @@ const Button = React.forwardRef(({
   onClick,
   type = 'button',
   className = '',
+  rounded = false,
+  elevated = false,
   ...props
 }, ref) => {
-  const buttonClasses = [
-    styles.button,
-    styles[variant],
-    styles[size],
-    loading && styles.loading,
-    fullWidth && styles.fullWidth,
-    className
-  ].filter(Boolean).join(' ');
-
   const handleClick = (event) => {
     if (loading || disabled) {
       event.preventDefault();
@@ -33,10 +25,26 @@ const Button = React.forwardRef(({
     onClick?.(event);
   };
 
+  // Loading spinner component
+  const LoadingSpinner = () => (
+    <div className={styles.spinner}>
+      <div className={styles.spinnerRing} />
+    </div>
+  );
+
   return (
     <button
       ref={ref}
-      className={buttonClasses}
+      className={`
+        ${styles.button}
+        ${styles[variant]}
+        ${styles[size]}
+        ${loading ? styles.loading : ''}
+        ${fullWidth ? styles.fullWidth : ''}
+        ${rounded ? styles.rounded : ''}
+        ${elevated ? styles.elevated : ''}
+        ${className}
+      `}
       onClick={handleClick}
       disabled={disabled || loading}
       type={type}
@@ -44,18 +52,24 @@ const Button = React.forwardRef(({
       aria-disabled={disabled || loading}
       {...props}
     >
+      {/* Left Icon */}
       {leftIcon && !loading && (
-        <span className={styles.icon} aria-hidden="true">
+        <span className={styles.leftIcon} aria-hidden="true">
           {leftIcon}
         </span>
       )}
       
-      <span className={loading ? styles.hiddenText : undefined}>
+      {/* Loading Spinner */}
+      {loading && <LoadingSpinner />}
+      
+      {/* Button Content */}
+      <span className={`${styles.content} ${loading ? styles.loadingContent : ''}`}>
         {children}
       </span>
       
+      {/* Right Icon */}
       {rightIcon && !loading && (
-        <span className={styles.icon} aria-hidden="true">
+        <span className={styles.rightIcon} aria-hidden="true">
           {rightIcon}
         </span>
       )}
@@ -64,40 +78,5 @@ const Button = React.forwardRef(({
 });
 
 Button.displayName = 'Button';
-
-Button.propTypes = {
-  /** Button content */
-  children: PropTypes.node.isRequired,
-  
-  /** Visual style variant */
-  variant: PropTypes.oneOf(['primary', 'secondary', 'outline', 'ghost', 'destructive']),
-  
-  /** Size of the button */
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
-  
-  /** Whether the button is in loading state */
-  loading: PropTypes.bool,
-  
-  /** Whether the button is disabled */
-  disabled: PropTypes.bool,
-  
-  /** Whether the button should take full width */
-  fullWidth: PropTypes.bool,
-  
-  /** Icon to display on the left side */
-  leftIcon: PropTypes.node,
-  
-  /** Icon to display on the right side */
-  rightIcon: PropTypes.node,
-  
-  /** Click handler */
-  onClick: PropTypes.func,
-  
-  /** Button type */
-  type: PropTypes.oneOf(['button', 'submit', 'reset']),
-  
-  /** Additional CSS classes */
-  className: PropTypes.string,
-};
 
 export default Button;

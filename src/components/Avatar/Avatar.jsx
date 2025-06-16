@@ -1,20 +1,20 @@
-import React, { useState, forwardRef } from 'react';
-import PropTypes from 'prop-types';
+import { useState, forwardRef } from 'react';
 import styles from './Avatar.module.css';
 
 const Avatar = forwardRef(({
   src,
   alt,
   name,
-  size = 'medium',
+  size = 'md',
   shape = 'circle',
-  color = 'secondary',
+  color,
   status,
   badge,
   loading = false,
   interactive = false,
   onClick,
   className = '',
+  variant = 'default',
   ...props
 }, ref) => {
   const [imageError, setImageError] = useState(false);
@@ -23,77 +23,65 @@ const Avatar = forwardRef(({
   // Generate initials from name
   const getInitials = (name) => {
     if (!name) return '';
-    
-    const names = name.trim().split(' ');
-    if (names.length === 1) {
-      return names[0].charAt(0).toUpperCase();
-    }
-    
-    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+    const words = name.trim().split(' ');
+    if (words.length === 1) return words[0][0].toUpperCase();
+    return (words[0][0] + words[words.length - 1][0]).toUpperCase();
   };
 
-  // Generate color based on name for consistency
+  // Generate color from name hash
   const getColorFromName = (name) => {
-    if (!name) return color;
-    
-    const colors = ['primary', 'success', 'warning', 'error', 'info'];
-    const charCode = name.charCodeAt(0);
-    return colors[charCode % colors.length];
+    if (!name) return 'neutral';
+    const colors = ['blue', 'green', 'purple', 'pink', 'orange', 'indigo', 'teal'];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
   };
 
-  const handleImageLoad = () => {
-    setImageLoading(false);
-  };
-
+  const handleImageLoad = () => setImageLoading(false);
   const handleImageError = () => {
     setImageError(true);
     setImageLoading(false);
   };
 
-  const handleClick = (event) => {
-    if (interactive && onClick) {
-      onClick(event);
+  const handleClick = (e) => {
+    if (interactive && onClick) onClick(e);
+  };
+
+  const handleKeyDown = (e) => {
+    if (interactive && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onClick?.(e);
     }
   };
 
-  const handleKeyDown = (event) => {
-    if (interactive && (event.key === 'Enter' || event.key === ' ')) {
-      event.preventDefault();
-      onClick?.(event);
-    }
-  };
-
-  const shouldShowImage = src && !imageError && !loading;
-  const shouldShowInitials = !shouldShowImage && name && !loading;
-  const isLoading = loading || imageLoading;
-  const finalColor = name && color === 'secondary' ? getColorFromName(name) : color;
-
-  const avatarClasses = [
-    styles.avatar,
-    styles[size],
-    styles[shape],
-    !shouldShowImage && styles[`color${finalColor.charAt(0).toUpperCase() + finalColor.slice(1)}`],
-    isLoading && styles.loading,
-    interactive && styles.interactive,
-    status && styles.withStatus,
-    badge && styles.withBadge,
-    className
-  ].filter(Boolean).join(' ');
-
-  const avatarProps = {
-    ref,
-    className: avatarClasses,
-    onClick: interactive ? handleClick : undefined,
-    onKeyDown: interactive ? handleKeyDown : undefined,
-    tabIndex: interactive ? 0 : undefined,
-    role: interactive ? 'button' : undefined,
-    'aria-label': interactive && name ? `${name} avatar` : alt || undefined,
-    ...props
-  };
+  const showImage = src && !imageError && !loading;
+  const showInitials = !showImage && name && !loading;
+  const finalColor = color || getColorFromName(name);
 
   return (
-    <div {...avatarProps}>
-      {shouldShowImage && (
+    <div
+      ref={ref}
+      className={`
+        ${styles.avatar}
+        ${styles[size]}
+        ${styles[shape]}
+        ${styles[variant]}
+        ${!showImage ? styles[finalColor] : ''}
+        ${loading ? styles.loading : ''}
+        ${interactive ? styles.interactive : ''}
+        ${className}
+      `}
+      onClick={interactive ? handleClick : undefined}
+      onKeyDown={interactive ? handleKeyDown : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      role={interactive ? 'button' : undefined}
+      aria-label={name || alt}
+      {...props}
+    >
+      {/* Avatar Content */}
+      {showImage && (
         <img
           src={src}
           alt={alt || name || 'Avatar'}
@@ -103,23 +91,29 @@ const Avatar = forwardRef(({
         />
       )}
       
-      {shouldShowInitials && (
-        <span aria-hidden="true">
+      {showInitials && (
+        <span className={styles.initials}>
           {getInitials(name)}
         </span>
       )}
       
+      {loading && (
+        <div className={styles.spinner} />
+      )}
+
+      {/* Status Indicator */}
       {status && (
-        <div 
-          className={`${styles.status} ${styles[`status${status.charAt(0).toUpperCase() + status.slice(1)}`]}`}
+        <span 
+          className={`${styles.status} ${styles[`status_${status}`]}`}
           aria-label={`Status: ${status}`}
         />
       )}
-      
+
+      {/* Badge */}
       {badge && (
-        <div className={styles.badge} aria-label={`${badge} notifications`}>
+        <span className={styles.badge}>
           {badge > 99 ? '99+' : badge}
-        </div>
+        </span>
       )}
     </div>
   );
@@ -127,32 +121,37 @@ const Avatar = forwardRef(({
 
 Avatar.displayName = 'Avatar';
 
-// Avatar Group component
+// Avatar Group Component
 const AvatarGroup = ({ 
   children, 
   max = 5, 
-  className = '', 
+  size = 'md',
+  spacing = 'default',
   onMoreClick,
+  className = '',
   ...props 
 }) => {
-  const avatars = React.Children.toArray(children);
-  const visibleAvatars = avatars.slice(0, max);
-  const remainingCount = avatars.length - max;
-
-  const groupClasses = [styles.avatarGroup, className].filter(Boolean).join(' ');
+  const validChildren = children ? (Array.isArray(children) ? children : [children]).filter(Boolean) : [];
+  const visibleChildren = validChildren.slice(0, max);
+  const remainingCount = Math.max(0, validChildren.length - max);
 
   return (
-    <div className={groupClasses} {...props}>
-      {visibleAvatars.map((avatar, index) => 
-        React.cloneElement(avatar, {
-          key: index,
-          className: `${avatar.props.className || ''} ${styles.avatarGroupItem}`.trim()
-        })
+    <div 
+      className={`${styles.group} ${styles[`spacing_${spacing}`]} ${className}`}
+      {...props}
+    >
+      {visibleChildren.map((child, index) => 
+        <div key={child.key || index} className={styles.groupItem}>
+          {typeof child === 'object' ? 
+            { ...child, props: { ...child.props, size } } : 
+            child
+          }
+        </div>
       )}
       
       {remainingCount > 0 && (
         <div
-          className={`${styles.avatar} ${styles.medium} ${styles.circle} ${styles.avatarGroupItem} ${styles.avatarGroupMore}`}
+          className={`${styles.avatar} ${styles[size]} ${styles.circle} ${styles.groupItem} ${styles.more}`}
           onClick={onMoreClick}
           onKeyDown={(e) => {
             if ((e.key === 'Enter' || e.key === ' ') && onMoreClick) {
@@ -162,69 +161,14 @@ const AvatarGroup = ({
           }}
           tabIndex={onMoreClick ? 0 : undefined}
           role={onMoreClick ? 'button' : undefined}
-          aria-label={`${remainingCount} more users`}
+          aria-label={`View ${remainingCount} more`}
         >
-          +{remainingCount}
+          <span className={styles.initials}>+{remainingCount}</span>
         </div>
       )}
     </div>
   );
 };
 
-// PropTypes
-Avatar.propTypes = {
-  /** Image source URL */
-  src: PropTypes.string,
-  
-  /** Alt text for image */
-  alt: PropTypes.string,
-  
-  /** Name to generate initials from */
-  name: PropTypes.string,
-  
-  /** Size of the avatar */
-  size: PropTypes.oneOf(['extraSmall', 'small', 'medium', 'large', 'extraLarge']),
-  
-  /** Shape of the avatar */
-  shape: PropTypes.oneOf(['circle', 'square', 'rounded']),
-  
-  /** Color theme for initials */
-  color: PropTypes.oneOf(['primary', 'secondary', 'success', 'warning', 'error', 'info']),
-  
-  /** Status indicator */
-  status: PropTypes.oneOf(['online', 'offline', 'away', 'busy']),
-  
-  /** Badge number */
-  badge: PropTypes.number,
-  
-  /** Loading state */
-  loading: PropTypes.bool,
-  
-  /** Whether the avatar is interactive */
-  interactive: PropTypes.bool,
-  
-  /** Click handler for interactive avatars */
-  onClick: PropTypes.func,
-  
-  /** Additional CSS classes */
-  className: PropTypes.string,
-};
-
-AvatarGroup.propTypes = {
-  /** Avatar components */
-  children: PropTypes.node.isRequired,
-  
-  /** Maximum number of avatars to show */
-  max: PropTypes.number,
-  
-  /** Additional CSS classes */
-  className: PropTypes.string,
-  
-  /** Click handler for "more" indicator */
-  onMoreClick: PropTypes.func,
-};
-
-// Attach AvatarGroup to Avatar
 Avatar.Group = AvatarGroup;
-
 export default Avatar;
