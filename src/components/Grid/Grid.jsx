@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import './Grid.css';
+import styles from './Grid.module.css';
 
 // Grid Item Component
 const GridItem = ({
@@ -10,20 +10,26 @@ const GridItem = ({
   color = 'blue',
   gradient = false,
   pattern = 'none',
-  size = 'medium',
+  size = 'md',
   interactive = false,
+  effect = 'none',
   className = '',
   onClick,
+  onKeyDown,
   style = {},
+  'aria-label': ariaLabel,
+  role,
+  tabIndex,
   ...props
 }) => {
   const itemClasses = [
-    'grid-item',
-    `grid-item--${color}`,
-    `grid-item--${size}`,
-    gradient && 'grid-item--gradient',
-    pattern !== 'none' && `grid-item--pattern-${pattern}`,
-    interactive && 'grid-item--interactive',
+    styles.gridItem,
+    styles[`gridItem${color.charAt(0).toUpperCase() + color.slice(1)}`],
+    styles[`gridItem${size.charAt(0).toUpperCase() + size.slice(1)}`],
+    gradient && styles.gridItemGradient,
+    pattern !== 'none' && styles[`gridItemPattern${pattern.charAt(0).toUpperCase() + pattern.slice(1)}`],
+    interactive && styles.gridItemInteractive,
+    effect !== 'none' && styles[`gridItem${effect.charAt(0).toUpperCase() + effect.slice(1)}`],
     className
   ].filter(Boolean).join(' ');
 
@@ -33,14 +39,35 @@ const GridItem = ({
     ...style
   };
 
+  const handleClick = (event) => {
+    if (onClick) {
+      onClick(event);
+    }
+  };
+
+  const handleKeyDown = (event) => {
+    if (interactive && (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault();
+      handleClick(event);
+    }
+    if (onKeyDown) {
+      onKeyDown(event);
+    }
+  };
+
   return (
     <div
       className={itemClasses}
       style={itemStyle}
-      onClick={onClick}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      role={interactive ? (role || 'button') : role}
+      tabIndex={interactive ? (tabIndex !== undefined ? tabIndex : 0) : tabIndex}
+      aria-label={ariaLabel}
+      data-testid="grid-item"
       {...props}
     >
-      <div className="grid-item-content">
+      <div className={styles.gridItemContent}>
         {children}
       </div>
     </div>
@@ -52,18 +79,19 @@ const Grid = ({
   children,
   columns = 'auto',
   rows = 'auto',
-  gap = '1rem',
+  gap = 'md',
   minItemWidth = '200px',
   responsive = true,
   variant = 'default',
   className = '',
   style = {},
+  'aria-label': ariaLabel,
   ...props
 }) => {
   const gridClasses = [
-    'grid-container',
-    `grid-container--${variant}`,
-    responsive && 'grid-container--responsive',
+    styles.gridContainer,
+    styles[`gridContainer${variant.charAt(0).toUpperCase() + variant.slice(1)}`],
+    responsive && styles.gridContainerResponsive,
     className
   ].filter(Boolean).join(' ');
 
@@ -87,43 +115,83 @@ const Grid = ({
     return rows;
   };
 
+  const getGapValue = () => {
+    const gapMap = {
+      xs: 'var(--space-2)',
+      sm: 'var(--space-3)',
+      md: 'var(--space-4)',
+      lg: 'var(--space-6)',
+      xl: 'var(--space-8)'
+    };
+    return gapMap[gap] || gap;
+  };
+
   const gridStyle = {
     gridTemplateColumns: getGridColumns(),
     gridTemplateRows: getGridRows(),
-    gap: gap,
+    gap: getGapValue(),
     ...style
   };
 
   return (
-    <div className={gridClasses} style={gridStyle} {...props}>
+    <div 
+      className={gridClasses} 
+      style={gridStyle} 
+      role="grid"
+      aria-label={ariaLabel || "Grid layout"}
+      data-testid="grid-container"
+      {...props}
+    >
       {children}
     </div>
   );
 };
 
-// Masonry Grid Component (Pinterest-style)
+// Masonry Grid Component
 const MasonryGrid = ({
   children,
   columns = 3,
-  gap = '1rem',
+  gap = 'md',
   className = '',
+  breakpoints = {
+    768: 2,
+    480: 1
+  },
+  'aria-label': ariaLabel,
   ...props
 }) => {
   const masonryClasses = [
-    'masonry-grid',
+    styles.masonryGrid,
     className
   ].filter(Boolean).join(' ');
 
+  const getGapValue = () => {
+    const gapMap = {
+      xs: 'var(--space-2)',
+      sm: 'var(--space-3)',
+      md: 'var(--space-4)',
+      lg: 'var(--space-6)',
+      xl: 'var(--space-8)'
+    };
+    return gapMap[gap] || gap;
+  };
+
   const masonryStyle = {
     columnCount: columns,
-    columnGap: gap,
+    columnGap: getGapValue(),
     ...props.style
   };
 
   return (
-    <div className={masonryClasses} style={masonryStyle}>
+    <div 
+      className={masonryClasses} 
+      style={masonryStyle}
+      role="grid"
+      aria-label={ariaLabel || "Masonry grid layout"}
+      data-testid="masonry-grid"
+    >
       {React.Children.map(children, (child, index) => (
-        <div key={index} className="masonry-item">
+        <div key={index} className={styles.masonryItem}>
           {child}
         </div>
       ))}
@@ -131,22 +199,60 @@ const MasonryGrid = ({
   );
 };
 
-// Dashboard Grid Component (Fixed layouts)
+// Dashboard Grid Component
 const DashboardGrid = ({
   children,
   layout = 'default',
-  gap = '1rem',
+  gap = 'md',
   className = '',
+  'aria-label': ariaLabel,
   ...props
 }) => {
   const dashboardClasses = [
-    'dashboard-grid',
-    `dashboard-grid--${layout}`,
+    styles.dashboardGrid,
+    styles[`dashboardGrid${layout.charAt(0).toUpperCase() + layout.slice(1)}`],
+    className
+  ].filter(Boolean).join(' ');
+
+  const getGapValue = () => {
+    const gapMap = {
+      xs: 'var(--space-2)',
+      sm: 'var(--space-3)',
+      md: 'var(--space-4)',
+      lg: 'var(--space-6)',
+      xl: 'var(--space-8)'
+    };
+    return gapMap[gap] || gap;
+  };
+
+  return (
+    <div 
+      className={dashboardClasses} 
+      style={{ gap: getGapValue() }} 
+      role="grid"
+      aria-label={ariaLabel || `${layout} dashboard layout`}
+      data-testid="dashboard-grid"
+      {...props}
+    >
+      {children}
+    </div>
+  );
+};
+
+// Grid Area Component for Dashboard layouts
+const GridArea = ({
+  children,
+  area,
+  className = '',
+  ...props
+}) => {
+  const areaClasses = [
+    styles[`gridArea${area.charAt(0).toUpperCase() + area.slice(1)}`],
     className
   ].filter(Boolean).join(' ');
 
   return (
-    <div className={dashboardClasses} style={{ gap }} {...props}>
+    <div className={areaClasses} {...props}>
       {children}
     </div>
   );
@@ -154,53 +260,154 @@ const DashboardGrid = ({
 
 // PropTypes
 GridItem.propTypes = {
+  /** Content to display in the grid item */
   children: PropTypes.node,
+  
+  /** Number of columns to span */
   colSpan: PropTypes.number,
+  
+  /** Number of rows to span */
   rowSpan: PropTypes.number,
+  
+  /** Color variant */
   color: PropTypes.oneOf([
     'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 
     'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 
     'rose', 'gray', 'slate', 'zinc', 'neutral', 'stone'
   ]),
+  
+  /** Enable gradient animation */
   gradient: PropTypes.bool,
+  
+  /** Pattern overlay */
   pattern: PropTypes.oneOf(['none', 'dots', 'lines', 'grid', 'diagonal', 'waves']),
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
+  
+  /** Size variant */
+  size: PropTypes.oneOf(['xs', 'sm', 'md', 'lg', 'xl']),
+  
+  /** Enable interactive behavior */
   interactive: PropTypes.bool,
+  
+  /** Special visual effects */
+  effect: PropTypes.oneOf(['none', 'glow', 'pulse', 'bounce', 'float', 'rotate', 'glass', 'neon']),
+  
+  /** Additional CSS classes */
   className: PropTypes.string,
+  
+  /** Click handler */
   onClick: PropTypes.func,
-  style: PropTypes.object
+  
+  /** Key down handler */
+  onKeyDown: PropTypes.func,
+  
+  /** Inline styles */
+  style: PropTypes.object,
+  
+  /** Accessible label */
+  'aria-label': PropTypes.string,
+  
+  /** ARIA role */
+  role: PropTypes.string,
+  
+  /** Tab index for focus management */
+  tabIndex: PropTypes.number
 };
 
 Grid.propTypes = {
+  /** Grid content */
   children: PropTypes.node.isRequired,
+  
+  /** Number of columns or CSS grid value */
   columns: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  
+  /** Number of rows or CSS grid value */
   rows: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  gap: PropTypes.string,
+  
+  /** Gap between grid items */
+  gap: PropTypes.oneOfType([
+    PropTypes.oneOf(['xs', 'sm', 'md', 'lg', 'xl']),
+    PropTypes.string
+  ]),
+  
+  /** Minimum width for auto-fit columns */
   minItemWidth: PropTypes.string,
+  
+  /** Enable responsive behavior */
   responsive: PropTypes.bool,
+  
+  /** Grid container variant */
   variant: PropTypes.oneOf(['default', 'padded', 'bordered', 'rounded']),
+  
+  /** Additional CSS classes */
   className: PropTypes.string,
-  style: PropTypes.object
+  
+  /** Inline styles */
+  style: PropTypes.object,
+  
+  /** Accessible label */
+  'aria-label': PropTypes.string
 };
 
 MasonryGrid.propTypes = {
+  /** Grid content */
   children: PropTypes.node.isRequired,
+  
+  /** Number of columns */
   columns: PropTypes.number,
-  gap: PropTypes.string,
-  className: PropTypes.string
+  
+  /** Gap between items */
+  gap: PropTypes.oneOfType([
+    PropTypes.oneOf(['xs', 'sm', 'md', 'lg', 'xl']),
+    PropTypes.string
+  ]),
+  
+  /** Additional CSS classes */
+  className: PropTypes.string,
+  
+  /** Responsive breakpoints */
+  breakpoints: PropTypes.object,
+  
+  /** Accessible label */
+  'aria-label': PropTypes.string
 };
 
 DashboardGrid.propTypes = {
+  /** Grid content */
   children: PropTypes.node.isRequired,
+  
+  /** Dashboard layout template */
   layout: PropTypes.oneOf(['default', 'sidebar', 'header', 'complex']),
-  gap: PropTypes.string,
+  
+  /** Gap between grid areas */
+  gap: PropTypes.oneOfType([
+    PropTypes.oneOf(['xs', 'sm', 'md', 'lg', 'xl']),
+    PropTypes.string
+  ]),
+  
+  /** Additional CSS classes */
+  className: PropTypes.string,
+  
+  /** Accessible label */
+  'aria-label': PropTypes.string
+};
+
+GridArea.propTypes = {
+  /** Content for the grid area */
+  children: PropTypes.node.isRequired,
+  
+  /** Grid area name */
+  area: PropTypes.oneOf(['header', 'sidebar', 'nav', 'main', 'aside', 'hero', 'footer']).isRequired,
+  
+  /** Additional CSS classes */
   className: PropTypes.string
 };
 
-// Export all components
+// Attach subcomponents to main Grid component
 Grid.Item = GridItem;
 Grid.Masonry = MasonryGrid;
 Grid.Dashboard = DashboardGrid;
+Grid.Area = GridArea;
 
-export { GridItem, MasonryGrid, DashboardGrid };
+// Export components
+export { GridItem, MasonryGrid, DashboardGrid, GridArea };
 export default Grid;
