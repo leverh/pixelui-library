@@ -1,5 +1,4 @@
-import { useState, useId, forwardRef } from 'react';
-import PropTypes from 'prop-types';
+import { useState, useId, forwardRef, useCallback, useRef, useEffect } from 'react';
 import styles from './Input.module.css';
 
 const Input = forwardRef(({
@@ -11,7 +10,9 @@ const Input = forwardRef(({
   onChange,
   onBlur,
   onFocus,
-  size = 'medium',
+  onKeyDown,
+  size = 'md', // 'xs', 'sm', 'md', 'lg', 'xl'
+  variant = 'default', // 'default', 'minimal', 'floating', 'glass'
   state,
   helperText,
   errorText,
@@ -24,17 +25,47 @@ const Input = forwardRef(({
   rightIcon,
   maxLength,
   showCharacterCount = false,
+  autoComplete,
+  autoFocus = false,
+  clearable = false,
+  loading = false,
   className = '',
   id: providedId,
+  name,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledby,
+  'aria-describedby': ariaDescribedby,
   ...props
 }, ref) => {
   const [showPassword, setShowPassword] = useState(false);
   const [internalValue, setInternalValue] = useState(defaultValue || '');
+  const [isFocused, setIsFocused] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   
+  const internalRef = useRef(null);
   const generatedId = useId();
   const id = providedId || generatedId;
   const helperTextId = `${id}-helper`;
   const errorTextId = `${id}-error`;
+  
+  // Combine internal ref with forwarded ref
+  const combinedRef = useCallback((node) => {
+    internalRef.current = node;
+    if (ref) {
+      if (typeof ref === 'function') {
+        ref(node);
+      } else {
+        ref.current = node;
+      }
+    }
+  }, [ref]);
+
+  // Auto-focus handling
+  useEffect(() => {
+    if (autoFocus && internalRef.current && !disabled) {
+      internalRef.current.focus();
+    }
+  }, [autoFocus, disabled]);
   
   // Controlled or uncontrolled component?
   const isControlled = value !== undefined;
@@ -73,56 +104,134 @@ const Input = forwardRef(({
     
     onChange?.(event);
   };
+
+  const handleFocus = (event) => {
+    setIsFocused(true);
+    setHasInteracted(true);
+    onFocus?.(event);
+  };
+
+  const handleBlur = (event) => {
+    setIsFocused(false);
+    onBlur?.(event);
+  };
+
+  const handleKeyDown = (event) => {
+    // Handle Escape to clear focus
+    if (event.key === 'Escape' && clearable && currentValue) {
+      handleClear();
+    }
+    onKeyDown?.(event);
+  };
   
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+    // Focus on input after toggle
+    setTimeout(() => {
+      internalRef.current?.focus();
+    }, 0);
+  };
+
+  const handleClear = () => {
+    const syntheticEvent = {
+      target: { value: '' },
+      currentTarget: internalRef.current
+    };
+    
+    if (!isControlled) {
+      setInternalValue('');
+    }
+    
+    onChange?.(syntheticEvent);
+    internalRef.current?.focus();
   };
   
   const inputClasses = [
     styles.input,
     styles[size],
+    styles[variant],
     validationState && styles[validationState],
     leftIcon && styles.hasLeftIcon,
-    (rightIcon || type === 'password') && styles.hasRightIcon,
+    (rightIcon || type === 'password' || clearable || loading) && styles.hasRightIcon,
+    isFocused && styles.focused,
+    hasInteracted && styles.interacted,
+    disabled && styles.disabled,
+    readOnly && styles.readOnly,
     className
   ].filter(Boolean).join(' ');
   
   // Calculate character count
   const characterCount = currentValue ? currentValue.length : 0;
   const isOverLimit = maxLength && characterCount > maxLength;
+  const isNearLimit = maxLength && characterCount > maxLength * 0.8;
+  
+  // Show clear button conditions
+  const showClearButton = clearable && currentValue && !disabled && !readOnly;
   
   // ARIA attributes
   const ariaAttributes = {
     'aria-invalid': validationState === 'error',
     'aria-describedby': [
       getHelperText() && helperTextId,
-      errorText && errorTextId
+      errorText && errorTextId,
+      showCharacterCount && maxLength && `${id}-count`
     ].filter(Boolean).join(' ') || undefined,
     'aria-required': required,
+    'aria-label': ariaLabel,
+    'aria-labelledby': ariaLabelledby || (label ? `${id}-label` : undefined),
   };
-  
-  // Eye icons for password toggle
+
+  // Enhanced icon components
   const EyeIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-      <circle cx="12" cy="12" r="3"></circle>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
     </svg>
   );
   
   const EyeOffIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-      <line x1="1" y1="1" x2="23" y2="23"></line>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+      <line x1="1" y1="1" x2="23" y2="23"/>
+    </svg>
+  );
+
+  const ClearIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  );
+
+  const LoadingSpinner = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.loadingSpinner}>
+      <path d="M21 12a9 9 0 11-6.219-8.56"/>
     </svg>
   );
 
   return (
-    <div className={styles.inputWrapper}>
+    <div 
+      className={`${styles.inputWrapper} ${className}`}
+      data-size={size}
+      data-variant={variant}
+      data-state={validationState}
+      data-focused={isFocused}
+      data-disabled={disabled}
+      data-readonly={readOnly}
+    >
       {label && (
         <div className={styles.labelWrapper}>
-          <label htmlFor={id} className={styles.label}>
+          <label 
+            htmlFor={id} 
+            id={`${id}-label`}
+            className={`${styles.label} ${required ? styles.labelRequired : ''}`}
+          >
             {label}
-            {required && <span className={styles.required} aria-label="required">*</span>}
+            {required && (
+              <span className={styles.required} aria-label="required">
+                *
+              </span>
+            )}
           </label>
           {!required && (
             <span className={styles.optional}>Optional</span>
@@ -138,134 +247,95 @@ const Input = forwardRef(({
         )}
         
         <input
-          ref={ref}
+          ref={combinedRef}
           id={id}
+          name={name}
           type={inputType}
           value={currentValue}
           defaultValue={isControlled ? undefined : defaultValue}
           onChange={handleChange}
-          onBlur={onBlur}
-          onFocus={onFocus}
+          onBlur={handleBlur}
+          onFocus={handleFocus}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
           readOnly={readOnly}
           maxLength={maxLength}
+          autoComplete={autoComplete}
           className={inputClasses}
           {...ariaAttributes}
           {...props}
         />
-        
-        {type === 'password' && (
-          <button
-            type="button"
-            className={styles.passwordToggle}
-            onClick={togglePasswordVisibility}
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
-            tabIndex={-1}
-          >
-            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-          </button>
-        )}
-        
-        {rightIcon && type !== 'password' && (
-          <span className={styles.rightIcon} aria-hidden="true">
-            {rightIcon}
-          </span>
-        )}
+
+        {/* Right side icons */}
+        <div className={styles.rightIconsContainer}>
+          {loading && (
+            <div className={styles.loadingContainer} aria-label="Loading">
+              <LoadingSpinner />
+            </div>
+          )}
+          
+          {showClearButton && !loading && (
+            <button
+              type="button"
+              className={styles.clearButton}
+              onClick={handleClear}
+              aria-label="Clear input"
+              tabIndex={-1}
+            >
+              <ClearIcon />
+            </button>
+          )}
+          
+          {type === 'password' && !loading && (
+            <button
+              type="button"
+              className={styles.passwordToggle}
+              onClick={togglePasswordVisibility}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+            </button>
+          )}
+          
+          {rightIcon && type !== 'password' && !showClearButton && !loading && (
+            <span className={styles.rightIcon} aria-hidden="true">
+              {rightIcon}
+            </span>
+          )}
+        </div>
       </div>
       
-      {getHelperText() && (
-        <div
-          id={helperTextId}
-          className={`${styles.helperText} ${getHelperTextClass()}`}
-        >
-          {getHelperText()}
-        </div>
-      )}
-      
-      {showCharacterCount && maxLength && (
-        <div 
-          className={`${styles.characterCount} ${isOverLimit ? styles.characterCountError : ''}`}
-          data-testid="character-count"
-        >
-          {characterCount}/{maxLength}
-        </div>
-      )}
+      {/* Helper text and character count row */}
+      <div className={styles.bottomRow}>
+        {getHelperText() && (
+          <div
+            id={helperTextId}
+            className={`${styles.helperText} ${getHelperTextClass()}`}
+          >
+            {getHelperText()}
+          </div>
+        )}
+        
+        {showCharacterCount && maxLength && (
+          <div 
+            id={`${id}-count`}
+            className={`
+              ${styles.characterCount} 
+              ${isOverLimit ? styles.characterCountError : ''}
+              ${isNearLimit ? styles.characterCountWarning : ''}
+            `}
+            aria-live="polite"
+          >
+            {characterCount}/{maxLength}
+          </div>
+        )}
+      </div>
     </div>
   );
 });
 
 Input.displayName = 'Input';
-
-Input.propTypes = {
-  /** Input type */
-  type: PropTypes.oneOf(['text', 'email', 'password', 'number', 'tel', 'url', 'search']),
-  
-  /** Input label */
-  label: PropTypes.string,
-  
-  /** Placeholder text */
-  placeholder: PropTypes.string,
-  
-  /** Controlled value */
-  value: PropTypes.string,
-  
-  /** Default value for uncontrolled component */
-  defaultValue: PropTypes.string,
-  
-  /** Change handler */
-  onChange: PropTypes.func,
-  
-  /** Blur handler */
-  onBlur: PropTypes.func,
-  
-  /** Focus handler */
-  onFocus: PropTypes.func,
-  
-  /** Input size */
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
-  
-  /** Validation state */
-  state: PropTypes.oneOf(['error', 'success', 'warning']),
-  
-  /** Helper text */
-  helperText: PropTypes.string,
-  
-  /** Error text (overrides helperText and state) */
-  errorText: PropTypes.string,
-  
-  /** Success text (overrides helperText) */
-  successText: PropTypes.string,
-  
-  /** Warning text (overrides helperText) */
-  warningText: PropTypes.string,
-  
-  /** Whether the field is required */
-  required: PropTypes.bool,
-  
-  /** Whether the input is disabled */
-  disabled: PropTypes.bool,
-  
-  /** Whether the input is read-only */
-  readOnly: PropTypes.bool,
-  
-  /** Icon to display on the left */
-  leftIcon: PropTypes.node,
-  
-  /** Icon to display on the right */
-  rightIcon: PropTypes.node,
-  
-  /** Maximum character length */
-  maxLength: PropTypes.number,
-  
-  /** Show character count */
-  showCharacterCount: PropTypes.bool,
-  
-  /** Additional CSS classes */
-  className: PropTypes.string,
-  
-  /** Input ID */
-  id: PropTypes.string,
-};
 
 export default Input;
