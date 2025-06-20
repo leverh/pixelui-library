@@ -60,7 +60,7 @@ A modern, accessible, and beautifully crafted React component library featuring 
 - **Modal** - Accessible overlays with backdrop blur effects
 
 ## 🎨 Design System
-
+**Use CSS variables where possible**
 ### **Color Palette**
 ```css
 /* Primary Colors */
