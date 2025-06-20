@@ -229,6 +229,7 @@ This project is licensed under the MIT License. Copy or share - I really don't c
 ## 📞 Links
 
 - **Code**: [View Storybook](https://68553fec355209b1c95b45f8-engtyheyzi.chromatic.com/)
+- **Deployed Version**:[The storybook on netlify](https://pixelsummit-storybook.netlify.app/) 
 - **GitHub**: [GitHub](https://github.com/leverh/pixelui-library)
 - **Portfolio Website**: [PixelSummit](https://pixelsummit.dev/)
 - **Email**: contact@pixelsummit.dv
