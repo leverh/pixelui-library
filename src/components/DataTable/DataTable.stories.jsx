@@ -1,7 +1,7 @@
 import DataTable from './DataTable';
 
 export default {
-  title: 'Components/DataTable',
+  title: 'Components/Data/DataTable',
   component: DataTable,
   parameters: {
     docs: {

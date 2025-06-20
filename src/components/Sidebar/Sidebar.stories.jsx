@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Sidebar from './Sidebar';
 
 export default {
-  title: 'Components/Sidebar',
+  title: 'Components/Navigation/Sidebar',
   component: Sidebar,
   parameters: {
     layout: 'fullscreen',

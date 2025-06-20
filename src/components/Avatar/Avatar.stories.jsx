@@ -1,7 +1,7 @@
 import Avatar from './Avatar';
 
 export default {
-  title: 'Components/Avatar',
+  title: 'Components/Display/Avatar',
   component: Avatar,
   parameters: {
     docs: {

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Header from './Header';
 
 export default {
-  title: 'Components/Header',
+  title: 'Components/Navigation/Header',
   component: Header,
   parameters: {
     layout: 'fullscreen',

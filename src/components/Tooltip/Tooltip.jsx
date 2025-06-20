@@ -7,13 +7,14 @@ const Tooltip = forwardRef(({
   content,
   position = 'top',
   color = 'dark',
-  size = 'medium',
-  delay = 'medium',
+  size = 'md',
+  delay = 'md',
   trigger = 'hover',
   showArrow = true,
   interactive = false,
   disabled = false,
   multiline = false,
+  animation = 'scale',
   className = '',
   onShow,
   onHide,
@@ -22,13 +23,14 @@ const Tooltip = forwardRef(({
   const [isVisible, setIsVisible] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(position);
   const [shouldShow, setShouldShow] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   
   const wrapperRef = useRef(null);
   const tooltipRef = useRef(null);
   const timeoutRef = useRef(null);
   const hideTimeoutRef = useRef(null);
 
-  // Auto-positioning logic
+  // Auto-positioning with collision detection
   const calculatePosition = () => {
     if (!wrapperRef.current || !tooltipRef.current) return position;
 
@@ -39,60 +41,71 @@ const Tooltip = forwardRef(({
       height: window.innerHeight
     };
 
-    // Calculate available space in each direction
-    const spaceTop = wrapper.top;
-    const spaceBottom = viewport.height - wrapper.bottom;
-    const spaceLeft = wrapper.left;
-    const spaceRight = viewport.width - wrapper.right;
+    // Calculate available space in each direction with padding
+    const padding = 16;
+    const spaceTop = wrapper.top - padding;
+    const spaceBottom = viewport.height - wrapper.bottom - padding;
+    const spaceLeft = wrapper.left - padding;
+    const spaceRight = viewport.width - wrapper.right - padding;
 
-    // Minimum space required (tooltip height/width + arrow + margin)
-    const minSpace = 80;
+    // Minimum space required (tooltip size + arrow + margin)
+    const minSpace = Math.max(tooltip.height, tooltip.width) + 20;
 
-    // Auto-position based on available space
+    // Smart auto-positioning based on available space and preferred order
     if (position === 'auto') {
-      if (spaceTop >= minSpace) return 'top';
-      if (spaceBottom >= minSpace) return 'bottom';
-      if (spaceRight >= minSpace) return 'right';
-      if (spaceLeft >= minSpace) return 'left';
-      return 'top'; // fallback
+      const positions = [
+        { pos: 'top', space: spaceTop },
+        { pos: 'bottom', space: spaceBottom },
+        { pos: 'right', space: spaceRight },
+        { pos: 'left', space: spaceLeft }
+      ];
+      
+      // Sort by available space (descending)
+      positions.sort((a, b) => b.space - a.space);
+      
+      // Return first position with enough space
+      for (const { pos, space } of positions) {
+        if (space >= minSpace) return pos;
+      }
+      
+      return positions[0].pos; // fallback to position with most space
     }
 
-    // Check if current position has enough space, otherwise flip
-    switch (position) {
-      case 'top':
-        return spaceTop >= minSpace ? 'top' : 'bottom';
-      case 'bottom':
-        return spaceBottom >= minSpace ? 'bottom' : 'top';
-      case 'left':
-        return spaceLeft >= minSpace ? 'left' : 'right';
-      case 'right':
-        return spaceRight >= minSpace ? 'right' : 'left';
-      default:
-        return position;
-    }
+    // Collision detection for fixed positions
+    const positionMap = {
+      top: spaceTop >= minSpace ? 'top' : spaceBottom >= minSpace ? 'bottom' : 'top',
+      bottom: spaceBottom >= minSpace ? 'bottom' : spaceTop >= minSpace ? 'top' : 'bottom',
+      left: spaceLeft >= minSpace ? 'left' : spaceRight >= minSpace ? 'right' : 'left',
+      right: spaceRight >= minSpace ? 'right' : spaceLeft >= minSpace ? 'left' : 'right'
+    };
+
+    return positionMap[position] || position;
   };
 
   const showTooltip = () => {
     if (disabled || !content) return;
 
     clearTimeout(hideTimeoutRef.current);
+    setIsAnimating(true);
     
     const delayMs = {
       none: 0,
-      short: 100,
-      medium: 300,
-      long: 500
+      xs: 50,
+      sm: 150,
+      md: 300,
+      lg: 500,
+      xl: 750
     }[delay] || 300;
 
     timeoutRef.current = setTimeout(() => {
       setShouldShow(true);
+      
       // Calculate position after tooltip is rendered
       setTimeout(() => {
-        if (position === 'auto' || position === 'top' || position === 'bottom') {
-          const newPosition = calculatePosition();
-          setCurrentPosition(newPosition);
-        }
+        const newPosition = calculatePosition();
+        setCurrentPosition(newPosition);
         setIsVisible(true);
+        setIsAnimating(false);
         onShow?.();
       }, 10);
     }, delayMs);
@@ -100,17 +113,24 @@ const Tooltip = forwardRef(({
 
   const hideTooltip = () => {
     clearTimeout(timeoutRef.current);
+    setIsAnimating(true);
     
     if (interactive) {
       // Delay hiding for interactive tooltips
       hideTimeoutRef.current = setTimeout(() => {
         setIsVisible(false);
-        setTimeout(() => setShouldShow(false), 150);
+        setTimeout(() => {
+          setShouldShow(false);
+          setIsAnimating(false);
+        }, 200);
         onHide?.();
       }, 100);
     } else {
       setIsVisible(false);
-      setTimeout(() => setShouldShow(false), 150);
+      setTimeout(() => {
+        setShouldShow(false);
+        setIsAnimating(false);
+      }, 200);
       onHide?.();
     }
   };
@@ -161,6 +181,20 @@ const Tooltip = forwardRef(({
     }
   };
 
+  // Keyboard support
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      if (trigger === 'focus' || trigger === 'both') {
+        event.preventDefault();
+        if (isVisible) {
+          hideTooltip();
+        } else {
+          showTooltip();
+        }
+      }
+    }
+  };
+
   // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
@@ -169,10 +203,10 @@ const Tooltip = forwardRef(({
     };
   }, []);
 
-  // Handle escape key for click tooltips
+  // Escape key handling
   useEffect(() => {
     const handleEscape = (event) => {
-      if (event.key === 'Escape' && isVisible && trigger === 'click') {
+      if (event.key === 'Escape' && isVisible) {
         hideTooltip();
       }
     };
@@ -181,9 +215,9 @@ const Tooltip = forwardRef(({
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
     }
-  }, [isVisible, trigger]);
+  }, [isVisible]);
 
-  // Handle click outside for click tooltips
+  // Click outside handling
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -204,24 +238,42 @@ const Tooltip = forwardRef(({
     }
   }, [isVisible, trigger]);
 
+  // Responsive positioning on resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (isVisible && (position === 'auto' || shouldShow)) {
+        const newPosition = calculatePosition();
+        setCurrentPosition(newPosition);
+      }
+    };
+
+    if (isVisible) {
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, [isVisible, position, shouldShow]);
+
   if (!content) {
     return children;
   }
 
   const tooltipClasses = [
     styles.tooltip,
-    styles[currentPosition],
-    styles[color],
-    styles[size],
-    styles[`delay${delay.charAt(0).toUpperCase() + delay.slice(1)}`],
+    styles[`position${currentPosition.charAt(0).toUpperCase() + currentPosition.slice(1)}`],
+    styles[`color${color.charAt(0).toUpperCase() + color.slice(1)}`],
+    styles[`size${size.charAt(0).toUpperCase() + size.slice(1)}`],
+    styles[`animation${animation.charAt(0).toUpperCase() + animation.slice(1)}`],
     isVisible && styles.visible,
+    isAnimating && styles.animating,
     interactive && styles.interactive,
     multiline && styles.multiline,
+    showArrow && styles.withArrow,
     className
   ].filter(Boolean).join(' ');
 
   const wrapperClasses = [
-    styles.tooltipWrapper
+    styles.tooltipWrapper,
+    disabled && styles.disabled
   ].filter(Boolean).join(' ');
 
   return (
@@ -242,6 +294,7 @@ const Tooltip = forwardRef(({
       onFocus={handleFocus}
       onBlur={handleBlur}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
       {...props}
     >
       {children}
@@ -251,17 +304,22 @@ const Tooltip = forwardRef(({
           ref={tooltipRef}
           className={tooltipClasses}
           role="tooltip"
+          aria-hidden={!isVisible}
           onMouseEnter={handleTooltipMouseEnter}
           onMouseLeave={handleTooltipMouseLeave}
         >
-          {typeof content === 'string' ? (
-            <span>{content}</span>
-          ) : (
-            content
-          )}
+          <div className={styles.tooltipContent}>
+            {typeof content === 'string' ? (
+              <span>{content}</span>
+            ) : (
+              content
+            )}
+          </div>
           
           {showArrow && (
-            <div className={`${styles.arrow} ${styles[currentPosition]}`} />
+            <div 
+              className={`${styles.arrow} ${styles[`arrow${currentPosition.charAt(0).toUpperCase() + currentPosition.slice(1)}`]}`} 
+            />
           )}
         </div>
       )}
@@ -285,13 +343,16 @@ Tooltip.propTypes = {
   color: PropTypes.oneOf(['dark', 'light', 'primary', 'success', 'warning', 'error']),
   
   /** Size of the tooltip */
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
+  size: PropTypes.oneOf(['xs', 'sm', 'md', 'lg', 'xl']),
   
   /** Delay before showing tooltip */
-  delay: PropTypes.oneOf(['none', 'short', 'medium', 'long']),
+  delay: PropTypes.oneOf(['none', 'xs', 'sm', 'md', 'lg', 'xl']),
   
   /** What triggers the tooltip */
   trigger: PropTypes.oneOf(['hover', 'focus', 'click', 'both']),
+  
+  /** Animation type */
+  animation: PropTypes.oneOf(['scale', 'fade', 'slide', 'bounce']),
   
   /** Whether to show arrow */
   showArrow: PropTypes.bool,

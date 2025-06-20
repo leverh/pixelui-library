@@ -1,7 +1,7 @@
 import Grid from './Grid';
 
 export default {
-  title: 'Components/Grid',
+  title: 'Components/Display/Grid',
   component: Grid,
   parameters: {
     docs: {

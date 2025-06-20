@@ -1,7 +1,7 @@
 import Accordion from './Accordion';
 
 export default {
-  title: 'Components/Accordion',
+  title: 'Components/Display/Accordion',
   component: Accordion,
   parameters: {
     docs: {

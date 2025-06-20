@@ -40,7 +40,7 @@ const HeartIcon = () => (
 );
 
 export default {
-  title: 'Components/Badge',
+  title: 'Components/Display/Badge',
   component: Badge,
   parameters: {
     docs: {

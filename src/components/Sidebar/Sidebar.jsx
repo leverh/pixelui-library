@@ -25,11 +25,11 @@ const Sidebar = ({
   const [expandedItems, setExpandedItems] = useState(new Set());
   const [hoveredItem, setHoveredItem] = useState(null);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   
   const sidebarRef = useRef(null);
   const searchInputRef = useRef(null);
 
-  // Filter items based on search term
   const filterItems = (items, term) => {
     if (!term) return items;
     
@@ -53,7 +53,6 @@ const Sidebar = ({
 
   const filteredItems = filterItems(items, searchTerm);
 
-  // Auto-expand items when searching
   useEffect(() => {
     if (searchTerm) {
       const expandAll = (items) => {
@@ -71,14 +70,15 @@ const Sidebar = ({
   }, [searchTerm, filteredItems]);
 
   const handleToggleCollapse = () => {
+    setIsAnimating(true);
     onCollapsedChange?.(!collapsed);
+    setTimeout(() => setIsAnimating(false), 300);
   };
 
   const handleItemClick = (item, event) => {
     event.preventDefault();
     
     if (item.children && item.children.length > 0) {
-      // Toggle expansion for parent items
       const newExpanded = new Set(expandedItems);
       if (newExpanded.has(item.id)) {
         newExpanded.delete(item.id);
@@ -87,7 +87,6 @@ const Sidebar = ({
       }
       setExpandedItems(newExpanded);
     } else {
-      // Handle leaf item click
       onItemClick?.(item, event);
     }
   };
@@ -138,6 +137,8 @@ const Sidebar = ({
             ${hasActiveDescendant ? styles.menuItemHasActive : ''}
             ${item.disabled ? styles.menuItemDisabled : ''}
             ${collapsed && level === 0 ? styles.menuItemCollapsed : ''}
+            ${isHovered ? styles.menuItemHovered : ''}
+            ${isAnimating ? styles.menuItemAnimating : ''}
           `}
           style={{
             paddingLeft: collapsed && level === 0 ? undefined : `${1 + level * 1.5}rem`
@@ -147,15 +148,25 @@ const Sidebar = ({
           onMouseLeave={() => setHoveredItem(null)}
           role="menuitem"
           tabIndex={item.disabled ? -1 : 0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              !item.disabled && handleItemClick(item, e);
+            }
+          }}
         >
-          {/* Icon */}
+          {/* Icon with animations */}
           {item.icon && (
-            <div className={`${styles.menuIcon} ${hasChildren && isExpanded ? styles.menuIconExpanded : ''}`}>
+            <div className={`
+              ${styles.menuIcon} 
+              ${hasChildren && isExpanded ? styles.menuIconExpanded : ''}
+              ${isActive ? styles.menuIconActive : ''}
+            `}>
               {item.icon}
             </div>
           )}
 
-          {/* Content */}
+          {/* Content with transitions */}
           {!collapsed && (
             <div className={styles.menuContent}>
               <div className={styles.menuLabel}>
@@ -169,21 +180,30 @@ const Sidebar = ({
             </div>
           )}
 
-          {/* Badge */}
+          {/* Badge with animations */}
           {!collapsed && item.badge && (
-            <div className={styles.menuBadge}>
+            <div className={`
+              ${styles.menuBadge}
+              ${isActive ? styles.menuBadgeActive : ''}
+              ${typeof item.badge === 'number' && item.badge > 0 ? styles.menuBadgePulse : ''}
+              ${item.badge === 'New' ? styles.menuBadgeNew : ''}
+            `}>
               {item.badge}
             </div>
           )}
 
-          {/* Expand/Collapse Arrow */}
+          {/* Arrow with rotation */}
           {!collapsed && hasChildren && (
-            <div className={`${styles.menuArrow} ${isExpanded ? styles.menuArrowExpanded : ''}`}>
+            <div className={`
+              ${styles.menuArrow} 
+              ${isExpanded ? styles.menuArrowExpanded : ''}
+              ${isActive ? styles.menuArrowActive : ''}
+            `}>
               ▶
             </div>
           )}
 
-          {/* Active Indicator */}
+          {/* Glowing Active Indicator */}
           {isActive && (
             <div className={styles.activeIndicator} />
           )}
@@ -203,12 +223,17 @@ const Sidebar = ({
                 {item.children.map(child => (
                   <div
                     key={child.id}
-                    className={`${styles.tooltipMenuItem} ${isItemActive(child) ? styles.tooltipMenuItemActive : ''}`}
+                    className={`
+                      ${styles.tooltipMenuItem} 
+                      ${isItemActive(child) ? styles.tooltipMenuItemActive : ''}
+                    `}
                     onClick={(e) => !child.disabled && handleItemClick(child, e)}
                   >
                     {child.icon && <span className={styles.tooltipMenuIcon}>{child.icon}</span>}
-                    {child.label}
-                    {child.badge && <span className={styles.tooltipMenuBadge}>{child.badge}</span>}
+                    <span className={styles.tooltipMenuLabel}>{child.label}</span>
+                    {child.badge && (
+                      <span className={styles.tooltipMenuBadge}>{child.badge}</span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -216,10 +241,20 @@ const Sidebar = ({
           </div>
         )}
 
-        {/* Submenu */}
+        {/* Submenu with staggered animations */}
         {!collapsed && hasChildren && isExpanded && (
           <div className={styles.submenu}>
-            {item.children.map(child => renderMenuItem(child, level + 1))}
+            {item.children.map((child, index) => (
+              <div
+                key={child.id}
+                className={styles.submenuItem}
+                style={{
+                  animationDelay: `${index * 0.05}s`
+                }}
+              >
+                {renderMenuItem(child, level + 1)}
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -228,7 +263,7 @@ const Sidebar = ({
 
   return (
     <>
-      {/* Overlay for mobile */}
+      {/* Glassmorphism Overlay */}
       {overlay && (
         <div 
           className={styles.overlay}
@@ -244,7 +279,8 @@ const Sidebar = ({
           ${styles[variant]}
           ${styles[position]}
           ${collapsed ? styles.collapsed : styles.expanded}
-          ${overlay ? styles.overlay : ''}
+          ${overlay ? styles.withOverlay : ''}
+          ${isAnimating ? styles.animating : ''}
           ${className}
         `}
         style={{
@@ -253,7 +289,7 @@ const Sidebar = ({
       >
         {/* Header */}
         <div className={styles.sidebarHeader}>
-          {/* Logo */}
+          {/* Logo with smooth scaling */}
           {logo && (
             <div className={`${styles.logo} ${collapsed ? styles.logoCollapsed : ''}`}>
               {logo}
@@ -289,9 +325,6 @@ const Sidebar = ({
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
               />
-              {/* <div className={styles.searchIcon}>
-                🔍
-              </div> */}
               {searchTerm && (
                 <button
                   className={styles.searchClear}
@@ -305,7 +338,7 @@ const Sidebar = ({
           </div>
         )}
 
-        {/* Navigation Menu */}
+        {/* Navigation */}
         <nav className={styles.navigation}>
           <div className={styles.menuList}>
             {filteredItems.length === 0 ? (
@@ -313,7 +346,17 @@ const Sidebar = ({
                 {searchTerm ? '🔍 No results found' : 'No menu items'}
               </div>
             ) : (
-              filteredItems.map(item => renderMenuItem(item))
+              filteredItems.map((item, index) => (
+                <div
+                  key={item.id}
+                  className={styles.menuItemContainer}
+                  style={{
+                    animationDelay: `${index * 0.05}s`
+                  }}
+                >
+                  {renderMenuItem(item)}
+                </div>
+              ))
             )}
           </div>
         </nav>

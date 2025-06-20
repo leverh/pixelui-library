@@ -86,7 +86,7 @@ const Avatar = ({ src, name, size = 32 }) => (
 );
 
 export default {
-  title: 'Components/Card',
+  title: 'Components/Display/Card',
   component: Card,
   parameters: {
     docs: {
