@@ -232,7 +232,7 @@ This project is licensed under the MIT License. Copy or share - I really don't c
 - **Deployed Version**:[The storybook on netlify](https://pixelsummit-storybook.netlify.app/) 
 - **GitHub**: [GitHub](https://github.com/leverh/pixelui-library)
 - **Portfolio Website**: [PixelSummit](https://pixelsummit.dev/)
-- **Email**: contact@pixelsummit.dv
+- **Email**: contact@pixelsummit.dev
 
 ---
 
